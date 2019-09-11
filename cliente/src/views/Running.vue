@@ -7,7 +7,7 @@
 
 <script>
 import WebSocketServer from 'websocket/lib/WebSocketServer';
-import createServer from '../server';
+import uuid from 'uuid/v4';
 
 export default {
   name: "running",
@@ -21,6 +21,9 @@ export default {
       status: 'off',
       wsServer: undefined,
       connection: undefined,
+      self: undefined,
+      hand: [],
+      sum: 0,
     };
   },
   created () {
@@ -28,31 +31,60 @@ export default {
     this.port = this.$route.params.port;
     this.status = 'loading'
 
-    console.log(this.$http)
-    const server = createServer();
+    let socket = new WebSocket("ws://" + this.host + ":" + this.port);
 
-    this.wsServer = new WebSocketServer({
-      httpServer: server,
-    })
+    socket.onopen = function(e) {
+      socket.send("My name is John");
+    };
 
-    // request connection
-    this.wsServer.on('request', function(request){
-      this.connection = request.accept(null, request.origin);
-      // handlers
-      this.connection.on('connect', function(connection) {
-        // handle connect
-        this.connection = connection;
-      });
-      this.connection.on('close', function(reason, description) {
-        // handle close connection
-      });
-      this.connection.on('message', function(message) {
-        // handle message
-      })
+    socket.onmessage = function(message) {
+      let msg = JSON.parse(message);
+      switch (msg.action) {
+        case 'connected':
+          this.self = msg.id;
+          // new or join room
 
-    })
+          break;
+        case 'recieved':
+          // get new card
+          this.hand.push(msg.card);
+        case 'start':
+          this.hand = msg.hand;
+          // pass card
+            // delete card
+          break;
+        case 'your_turn':
+          this.sum = msg.sum;
+          // make your move
+          // make math
 
+          break;
+        case 'lose':
+          // perdio
+          break;
+        case 'win':
+          // gano
+          break;
+        
+      
+        default:
+          break;
+      }
+    };
 
+    socket.onclose = function(event) {
+      if (event.wasClean) {
+        console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        // e.g. server process killed or network down
+        // event.code is usually 1006 in this case
+        console.log('[close] Connection died');
+      }
+    };
+
+    socket.onerror = function(error) {
+      alert(`[error] ${error.message}`);
+    };
   }
 };
 </script>
