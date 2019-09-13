@@ -2,6 +2,7 @@
   <div class="running">
     <h1>host: {{ host }}</h1>
     <h1>port: {{ port }}</h1>
+    <h1>room: {{ room }}</h1>
   </div>
 </template>
 
@@ -14,57 +15,91 @@ export default {
   props: {
 
   },
-  data() {
-    return {
-      host: '',
-      port: '',
-      status: 'off',
-      wsServer: undefined,
-      connection: undefined,
-      self: undefined,
-      hand: [],
-      sum: 0,
-    };
-  },
+  data: () => ({
+    host: '',
+    port: '',
+    room: '',
+    status: 'off',
+    wsServer: undefined,
+    connection: undefined,
+    self: undefined,
+    hand: [],
+    sum: 0,
+  }),
   created () {
     this.host = this.$route.params.host;
     this.port = this.$route.params.port;
+    this.room = this.$route.params.room;
+    console.log(this.$route.params.room, this.room);
     this.status = 'loading'
 
     let socket = new WebSocket("ws://" + this.host + ":" + this.port);
 
-    socket.onopen = function(e) {
-      socket.send("My name is John");
+    socket.onopen = (e) => {
+      
     };
 
-    socket.onmessage = function(message) {
-      let msg = JSON.parse(message);
+    socket.onmessage = (message) => {
+      console.log(message.data);
+      let msg = JSON.parse(message.data);
       switch (msg.action) {
-        case 'connected':
+
+        case 'connected': {
           this.self = msg.id;
           // new or join room
-
+          console.log(this.room)
+          if (this.room == undefined) {
+            // new room
+            console.log('new room')
+            socket.send(JSON.stringify({
+              action: 'newRoom',
+              id: this.self,
+            }));
+          }
+          else {
+            // join room
+            socket.send(JSON.stringify({
+              action: 'joinRoom',
+              id: this.self,
+              room: this.room,
+            }));
+          }
           break;
-        case 'recieved':
+        }
+        case 'joinRoom': {
+          this.room = msg.room;
+          alert(this.room);
+          break;
+        }
+        case 'recieved': {
           // get new card
           this.hand.push(msg.card);
-        case 'start':
+          break;
+        }
+        case 'start': {
           this.hand = msg.hand;
           // pass card
             // delete card
           break;
-        case 'your_turn':
+        }
+        case 'ready': {
           this.sum = msg.sum;
           // make your move
           // make math
-
           break;
-        case 'lose':
+        }
+        case 'change': {
+          this.sum = msg.sum;
+          break;
+        }
+        case 'lose': {
           // perdio
           break;
-        case 'win':
+        }
+        case 'win': {
           // gano
           break;
+        }
         
       
         default:
@@ -72,7 +107,7 @@ export default {
       }
     };
 
-    socket.onclose = function(event) {
+    socket.onclose = (event) => {
       if (event.wasClean) {
         console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
       } else {
@@ -82,7 +117,7 @@ export default {
       }
     };
 
-    socket.onerror = function(error) {
+    socket.onerror = (error) => {
       alert(`[error] ${error.message}`);
     };
   }

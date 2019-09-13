@@ -6,9 +6,20 @@
       <span> Host: </span>
       <input v-model="host" placeholder="host ip">
     </div>
+
     <div class="row">
       <span> Port: </span>
       <input v-model="port" placeholder="port">
+    </div>
+
+    <div class="row">
+      <span> New Room: </span>
+      <input type="checkbox" id="newRoom" v-model="newRoom">
+    </div>
+
+    <div class="row">
+      <span> Room: </span>
+      <input v-model="room" placeholder="room" :disabled="isDisabled">
     </div>
 
     <div class="row">
@@ -17,6 +28,7 @@
         params: {
           host,
           port,
+          room,
         }
       }" >
         Submit
@@ -31,9 +43,16 @@
   export default {
     name: 'login',
     props: {
-      host: '',
-      port: '',
+      host: 'localhost',
+      port: '1337',
+      newRoom: true,
+      room: '',
     },
+    computed: {
+      isDisabled: function(){
+        return this.newRoom;
+      }
+    }
   };
 </script>
 
