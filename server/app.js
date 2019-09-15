@@ -6,12 +6,12 @@ let _ = require('lodash');
 const PORT = 1337;
 
 const DECK = [
+  ...Array(4).fill(-2),
   ...Array(4).fill(-1),
   ...Array(4).fill(0),
   ...Array(4).fill(1),
   ...Array(4).fill(2),
   ...Array(4).fill(3),
-  ...Array(4).fill(4),
 ];
 
 // state
@@ -91,6 +91,7 @@ wsServer.on('request', (request) => {
           sum: 0,
         }
         players[msg.id].room = roomNumber;
+        players[msg.id].name = msg.name;
 
         players[msg.id].connection.send(JSON.stringify({
           action: 'joinRoom',
@@ -108,6 +109,7 @@ wsServer.on('request', (request) => {
 
         if (playersOnRoom < 4) {
           players[msg.id].room = roomNumber;
+          players[msg.id].name = msg.name;
           rooms[roomNumber].order.push(msg.id);
           players[msg.id].connection.send(JSON.stringify({
             action: 'joinRoom',
@@ -136,15 +138,24 @@ wsServer.on('request', (request) => {
             action: 'ready',
           }));
         }
-
+        break;
       }
       case 'make_move': {
         const p = players[msg.id];
+        const order = rooms[p.room].order;
         rooms[p.room].sum += msg.card;
 
-        if (rooms[p.room] > 10) {
+        // broadcast new sum
+        for (player of order) {
+          players[player].connection.send(JSON.stringify({
+            action: 'update',
+            sum: rooms[p.room].sum,
+          }));
+        }
+
+        if (rooms[p.room].sum > 10) {
           // player lose
-          rooms[p.room].order.pop(msg.id);
+          rooms[p.room].order.splice(rooms[p.room].order.indexOf(msg.id), 1);
           players[msg.id].connection.send(JSON.stringify({
             action: 'lose',
           }));
@@ -156,10 +167,16 @@ wsServer.on('request', (request) => {
             }));
           }
         }
-        let turn = turn.findIndex(e => e == msg.id);
-        let nextTurn = (turn + 1) % (turn);
+        let turn = order.findIndex(e => e == msg.id);
+        console.log(turn, rooms[p.room].order.length);
+        let nextTurn = (turn + 1) % (rooms[p.room].order.length);
+
+        console.log("Siguiente index", nextTurn);
         
         let nextPlayerId = rooms[p.room].order[nextTurn];
+
+        console.log("siguiente id", nextPlayerId);
+        console.log(rooms[p.room].order);
 
         players[nextPlayerId].connection.send(JSON.stringify({
           action: 'ready',
@@ -173,6 +190,19 @@ wsServer.on('request', (request) => {
           ...rooms,
         }));
         break;
+      }
+      case 'send': {
+        const p = players[msg.id];
+        const order = rooms[p.room].order;
+
+        for (player of order) {
+          players[player].connection.send(JSON.stringify({
+            action: 'message',
+            from: p.name,
+            body: msg.body,
+          }));
+        }
+
       }
     }
   });

@@ -3,6 +3,11 @@
     <h1>Initiate your server!</h1>
 
     <div class="row">
+      <span> Name: </span>
+      <input v-model="name" placeholder="username">
+    </div>
+
+    <div class="row">
       <span> Host: </span>
       <input v-model="host" placeholder="host ip">
     </div>
@@ -29,6 +34,7 @@
           host,
           port,
           room,
+          name,
         }
       }" >
         Submit
@@ -42,11 +48,14 @@
 <script>
   export default {
     name: 'login',
-    props: {
-      host: 'localhost',
-      port: '1337',
-      newRoom: true,
-      room: '',
+    data: function() {
+      return {
+        host: 'localhost',
+        port: '1337',
+        newRoom: false,
+        room: '',
+        name: '',
+      }
     },
     computed: {
       isDisabled: function(){
