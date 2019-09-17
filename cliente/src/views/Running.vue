@@ -159,10 +159,12 @@ export default {
         }
         case 'lose': {
           // perdio
+          alert("You lose, pls go back to keep playing")
           break;
         }
         case 'win': {
           // gano
+          alert("You Win, pls go back to keep playing")
           break;
         }
         case 'message': {
