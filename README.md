@@ -14,11 +14,11 @@ El juego es de 4 jugadores de cartas, el deck cuenta con 4 copias de -2 a 3, es 
 * Node
 * npm o yarn
 * ingersar a ``` cd ./cliente```
-* ``` npm install ``` o ``` yanr install ```
+* ``` npm install ``` o ``` yarn install ```
 * ``` npm serve ``` o ``` yarn serve ```
 #### Server
 * Node
 * npm o yarn
 * ingersar a ``` cd ./server```
-* ``` npm install ``` o ``` yanr install ```
+* ``` npm install ``` o ``` yarn install ```
 * ``` node ./app.js ```
