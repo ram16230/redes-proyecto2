@@ -6,12 +6,12 @@ let _ = require('lodash');
 const PORT = 1337;
 
 const DECK = [
-  ...Array(4).fill(-2),
   ...Array(4).fill(-1),
   ...Array(4).fill(0),
   ...Array(4).fill(1),
   ...Array(4).fill(2),
   ...Array(4).fill(3),
+  ...Array(4).fill(4),
 ];
 
 // state
